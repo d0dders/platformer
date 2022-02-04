@@ -3,8 +3,10 @@ function love.load()
 
     anim8 = require 'libraries/anim8/anim8'
     sti = require 'libraries/Simple-Tiled-Implementation/sti'
-    wf = require 'libraries/windfield/windfield'
+    cameraFile = require 'libraries/hump/camera'
     
+    cam = cameraFile()
+
     sprites = {}
     sprites.playerSheet = love.graphics.newImage('sprites/playerSheet.png')
     
@@ -15,6 +17,7 @@ function love.load()
     animations.jump = anim8.newAnimation(grid('1-7',2), 0.05)
     animations.run = anim8.newAnimation(grid('1-15',3), 0.05)
 
+    wf = require 'libraries/windfield/windfield'
     world = wf.newWorld(0, 800, false)
 
     world:setQueryDebugDrawing(true)
@@ -36,12 +39,16 @@ function love.update(dt)
     world:update(dt)
     gameMap:update(dt)
     playerUpdate(dt)
+    local px, py = player:getPosition()
+    cam:lookAt(px, love.graphics.getHeight()/2)
 end
 
 function love.draw()
-    gameMap:drawLayer(gameMap.layers["Tile Layer 1"])
-    world:draw()
-    drawPlayer()
+    cam:attach()
+        gameMap:drawLayer(gameMap.layers["Tile Layer 1"])
+        world:draw()
+        drawPlayer()
+    cam:detach()
 end
 
 function love.keypressed(key)
