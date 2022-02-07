@@ -17,6 +17,7 @@ function love.load()
     sprites = {}
     sprites.playerSheet = love.graphics.newImage('sprites/playerSheet.png')
     sprites.enemySheet = love.graphics.newImage('sprites/enemySheet.png')
+    sprites.background = love.graphics.newImage('sprites/background.png')
 
     local grid = anim8.newGrid(614, 564, sprites.playerSheet:getWidth(), sprites.playerSheet:getHeight())
     local enemyGrid = anim8.newGrid(100, 79, sprites.enemySheet:getWidth(), sprites.enemySheet:getHeight())
@@ -39,8 +40,8 @@ function love.load()
     require('enemy')
     require('libraries/show')
 
-    --dangerZone = world:newRectangleCollider(0,550,800,50, {collision_class = 'Danger'})
-    --dangerZone:setType('static')
+    dangerZone = world:newRectangleCollider(-500,800,5000,50, {collision_class = 'Danger'})
+    dangerZone:setType('static')
 
     platforms = {}
 
@@ -77,9 +78,10 @@ function love.update(dt)
 end
 
 function love.draw()
+    love.graphics.draw(sprites.background,0 ,0)
     cam:attach()
         gameMap:drawLayer(gameMap.layers["Tile Layer 1"])
-        world:draw()
+        --world:draw() -- for debugging colliders
         drawPlayer()
         drawEnemies()
     cam:detach()
@@ -138,8 +140,13 @@ function loadMap(mapName)
     saveData.currentLevel = mapName
     love.filesystem.write("data.lua", table.show(saveData, "saveData"))
     destroyAll()
-    player:setPosition(300, 100)
+    player:setPosition(playerStartX, playerStartY)
     gameMap = sti("maps/" .. mapName .. ".lua")
+    for i, obj in ipairs(gameMap.layers["Start"].objects) do
+        playerStartX = obj.x
+        playerStartY = obj.y
+    end
+    player:setPosition(playerStartX, playerStartY)
     for i, obj in ipairs(gameMap.layers["Platforms"].objects) do
         spawnPlatform(obj.x, obj.y, obj.width, obj.height)
     end
